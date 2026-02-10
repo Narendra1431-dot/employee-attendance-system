@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8888:8000"
+    volumes:
+      - ./backend:/app
+    environment:
+      - DATABASE_URL=sqlite:///./attendance.db
+      - SECRET_KEY=your-super-secret-key-change-me
+      - ALGORITHM=HS256
+      - ACCESS_TOKEN_EXPIRE_MINUTES=1440
+    restart: always

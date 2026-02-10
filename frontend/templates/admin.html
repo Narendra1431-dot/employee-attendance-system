@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel | Attendance Intel</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <nav>
+        <div class="brand">
+            <h2 style="font-weight: 800; letter-spacing: -1px;">Attendance<span style="font-weight: 300;">Intel</span>
+            </h2>
+        </div>
+        <div class="nav-links">
+            <a href="/dashboard">Dashboard</a>
+            <a href="/admin" class="active">Admin Panel</a>
+            <a href="#" onclick="logout()" style="color: var(--danger);">Logout</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <header style="margin-bottom: 40px; display: flex; justify-content: space-between; align-items: flex-end;">
+            <div>
+                <h1 style="font-size: 2.5rem; font-weight: 800;">System<span style="font-weight: 300;">Overview</span>
+                </h1>
+                <p style="color: var(--text-muted); margin-top: 8px;">Live attendance monitoring & management</p>
+            </div>
+            <div style="display: flex; gap: 12px;">
+                <button onclick="exportCSV()" class="btn" style="background: rgba(255,255,255,0.05);">
+                    Export Reports
+                </button>
+                <button onclick="openConfigModal()" class="btn btn-primary">
+                    System Settings
+                </button>
+            </div>
+        </header>
+
+        <div class="dashboard-grid">
+            <div class="glass-container stat-card">
+                <p style="color: var(--text-muted);">Total Present</p>
+                <div class="value" id="stats-present">0</div>
+            </div>
+            <div class="glass-container stat-card" style="border-left: 4px solid var(--warning);">
+                <p style="color: var(--text-muted);">Late Arrivals</p>
+                <div class="value" id="stats-late">0</div>
+            </div>
+            <div class="glass-container stat-card" style="border-left: 4px solid var(--danger);">
+                <p style="color: var(--text-muted);">Total Absent</p>
+                <div class="value" id="stats-absent">0</div>
+            </div>
+        </div>
+
+        <!-- Employee Management Section -->
+        <div class="glass-container" style="padding: 32px; margin-bottom: 40px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                <h3 style="font-weight: 600;">Managed Employees</h3>
+                <div style="display: flex; gap: 12px; width: 400px;">
+                    <input type="text" id="emp-search" placeholder="Search by name or code..."
+                        style="padding: 8px 16px;">
+                </div>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Name</th>
+                            <th>Department</th>
+                            <th>Designation</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="employee-list">
+                        <!-- Employee items will be injected -->
+                    </tbody>
+                </table>
+            </div>
+            <div id="pagination" style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 8px;">
+                <!-- Pagination buttons -->
+            </div>
+        </div>
+
+        <!-- Recent Logs Section -->
+        <div class="glass-container" style="padding: 32px; margin-bottom: 40px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                <h3 style="font-weight: 600;">Attendance Management</h3>
+                <button onclick="openManualAttendanceModal()" class="btn btn-primary" style="font-size: 0.8rem;">Add
+                    Manual Record</button>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Employee</th>
+                            <th>Check In</th>
+                            <th>Check Out</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="all-attendance-list">
+                        <!-- All attendance records will be injected here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="glass-container" style="padding: 32px;">
+            <h3 style="font-weight: 600; margin-bottom: 24px;">System Integrity Issues</h3>
+            <div id="integrity-report" style="display: flex; flex-direction: column; gap: 12px;">
+                <!-- Anomalies will be injected -->
+                <p style="color: var(--text-muted);">Scanning for anomalies...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Settings -->
+    <div id="config-modal" class="modal">
+        <div class="glass-container modal-content">
+            <h2 style="margin-bottom: 20px;">System Settings</h2>
+            <div class="form-group">
+                <label>Office Start Time</label>
+                <input type="time" id="config-start" value="09:00">
+            </div>
+            <div class="form-group">
+                <label>Grace Period (minutes)</label>
+                <input type="number" id="config-grace" value="15">
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
+                <button onclick="closeConfigModal()" class="btn">Cancel</button>
+                <button onclick="saveConfig()" class="btn btn-primary">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Manual Attendance -->
+    <div id="manual-att-modal" class="modal">
+        <div class="glass-container modal-content" style="max-width: 600px;">
+            <h2 style="margin-bottom: 20px;">Manual Attendance Entry</h2>
+            <div class="form-group">
+                <label>Employee</label>
+                <select id="man-emp-id" style="background: rgba(0,0,0,0.4); color: white;"></select>
+            </div>
+            <div class="form-group">
+                <label>Date</label>
+                <input type="date" id="man-date">
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div class="form-group">
+                    <label>Check In Time</label>
+                    <input type="time" id="man-check-in">
+                </div>
+                <div class="form-group">
+                    <label>Check Out Time</label>
+                    <input type="time" id="man-check-out">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Status</label>
+                <select id="man-status" style="background: rgba(0,0,0,0.4); color: white;">
+                    <option value="Present">Present</option>
+                    <option value="Late">Late</option>
+                    <option value="Half-Day">Half-Day</option>
+                    <option value="On-Leave">On-Leave</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Notes / Reason</label>
+                <textarea id="man-notes" placeholder="Reason for manual entry..."
+                    style="width: 100%; min-height: 80px; background: rgba(0,0,0,0.2); color: white; border: 1px solid var(--glass-border); border-radius: 12px; padding: 12px;"></textarea>
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
+                <button onclick="closeManualAttendanceModal()" class="btn">Cancel</button>
+                <button onclick="submitManualAttendance()" class="btn btn-primary">Create Record</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Edit Employee -->
+    <div id="edit-emp-modal" class="modal">
+        <div class="glass-container modal-content">
+            <h2 style="margin-bottom: 20px;">Edit Employee</h2>
+            <input type="hidden" id="edit-emp-id">
+            <div class="form-group">
+                <label>Employee Code</label>
+                <input type="text" id="edit-emp-code">
+            </div>
+            <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" id="edit-emp-name">
+            </div>
+            <div class="form-group">
+                <label>Department</label>
+                <input type="text" id="edit-emp-dept">
+            </div>
+            <div class="form-group">
+                <label>Designation</label>
+                <input type="text" id="edit-emp-desig">
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
+                <button onclick="closeEditEmpModal()" class="btn">Cancel</button>
+                <button onclick="saveEmployeeEdit()" class="btn btn-primary">Update Profile</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+
+</html>
